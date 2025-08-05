@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài giảng: Tách Kim Loại và Sử Dụng Hợp Kim - Thầy Lâm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            scroll-behavior: smooth;
+            background-color: #f0f9ff; /* light-blue-50 */
+        }
+        .pill-button {
+            transition: all 0.3s ease;
+        }
+        .pill-button:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(20, 184, 166, 0.4);
+        }
+        .secondary-button {
+            transition: all 0.2s ease;
+        }
+        .secondary-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .quiz-option {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-option:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .quiz-option.selected {
+            border-color: #fbbf24; /* amber-400 */
+            background-color: #fefce8; /* yellow-50 */
+            box-shadow: 0 0 0 2px #fbbf24;
+        }
+        .quiz-option.correct {
+            background-color: #ecfdf5 !important; /* green-50 */
+            border-color: #10b981 !important; /* emerald-500 */
+            color: #065f46; /* emerald-800 */
+        }
+        .quiz-option.incorrect {
+            background-color: #fff1f2 !important; /* rose-50 */
+            border-color: #f43f5e !important; /* rose-500 */
+            color: #9f1239; /* rose-800 */
+        }
+        .quiz-option.correct-answer-highlight {
+             border-color: #10b981;
+             box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+        .flag-button.flagged svg {
+            fill: #f59e0b; /* amber-500 */
+        }
+        .tab-button.active {
+            border-bottom-color: #0d9488; /* teal-600 */
+            color: #0d9488;
+            font-weight: 700;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #14b8a6; /* teal-500 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom scrollbar for mobile nav */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 bg-gradient-to-br from-cyan-400 to-teal-600 z-50 flex flex-col items-center justify-center p-4">
+        <div id="ad-banner" class="absolute top-4 right-4 bg-white p-2 rounded-lg shadow-lg max-w-xs z-10">
+            <button onclick="document.getElementById('ad-banner').style.display='none'" class="absolute -top-2 -right-2 bg-gray-700 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">&times;</button>
+            <img src="https://i.imgur.com/RGTC0CZ.png" alt="Quảng cáo khóa học VIP" class="rounded-md w-full">
+        </div>
+        <div class="text-center text-white">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-2 drop-shadow-lg">TÁCH KIM LOẠI & SỬ DỤNG HỢP KIM</h1>
+            <p class="text-xl md:text-2xl mb-8 drop-shadow">Bài giảng Hóa học lớp 9 cùng <span class="font-bold text-amber-300">Thầy Lâm</span></p>
+            <button id="start-learning-btn" class="pill-button bg-gradient-to-r from-amber-400 to-yellow-500 text-teal-900 font-bold py-3 px-10 rounded-full text-lg shadow-xl">
+                Bắt đầu học
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="hidden">
+        <header class="bg-white/80 backdrop-blur-lg shadow-md sticky top-0 z-40">
+            <div class="container mx-auto px-4 py-3 flex flex-col items-center">
+                <div class="text-3xl font-extrabold text-teal-700">
+                    Hóa Học 9
+                </div>
+                <nav id="tabs" class="w-full mt-3">
+                    <div class="w-full overflow-x-auto whitespace-nowrap scrollbar-hide text-center">
+                        <button class="tab-button text-slate-600 py-2 px-4 inline-block border-b-4 border-transparent active" onclick="showTab('intro')">Giới thiệu</button>
+                        <button class="tab-button text-slate-600 py-2 px-4 inline-block border-b-4 border-transparent" onclick="showTab('content1')">Tách Kim Loại</button>
+                        <button class="tab-button text-slate-600 py-2 px-4 inline-block border-b-4 border-transparent" onclick="showTab('content2')">Hợp Kim</button>
+                        <button class="tab-button text-slate-600 py-2 px-4 inline-block border-b-4 border-transparent" onclick="showTab('quiz')">Kiểm tra</button>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="container mx-auto p-4 md:p-8">
+            <!-- Tab Content -->
+            <div id="intro" class="tab-content">
+                <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-teal-500">
+                    <h2 class="text-3xl font-bold text-teal-600 mb-4 flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="M12 6.52c.8-.83 2.18.25 1.4 1.45l-4.1 4.1c-.22.22-.22.58 0 .8l4.1 4.1c.78 1.2-1.4 1.4-1.4 1.45-1.6.1-2.9-1.2-2.9-2.85 0-.8.3-1.5.8-2.1l-2.3-2.3c-.3-.3-.3-.8 0-1.1l2.3-2.3c-.5-.6-.8-1.3-.8-2.1 0-1.65 1.3-2.95 2.9-2.85z"/><path d="M18 6.52c.8-.83 2.18.25 1.4 1.45l-4.1 4.1c-.22.22-.22.58 0 .8l4.1 4.1c.78 1.2-1.4 1.4-1.4 1.45-1.6.1-2.9-1.2-2.9-2.85 0-.8.3-1.5.8-2.1l-2.3-2.3c-.3-.3-.3-.8 0-1.1l2.3-2.3c-.5-.6-.8-1.3-.8-2.1 0-1.65 1.3-2.95 2.9-2.85z"/></svg>
+                        Lời chào từ Thầy Lâm!
+                    </h2>
+                    <p class="text-lg mb-4 text-slate-700">
+                        Chào các em học sinh thân mến! Hôm nay, thầy trò chúng ta sẽ cùng nhau khám phá một chủ đề vô cùng thú vị: làm thế nào để "giải cứu" các kim loại khỏi những hợp chất giam giữ chúng và cách con người "kết bạn" các kim loại lại với nhau để tạo ra những vật liệu mới siêu việt gọi là hợp kim.
+                    </p>
+                    <p class="text-lg mb-4 text-slate-700">
+                        Hãy tưởng tượng kim loại như những vị vua bị giam cầm trong các "lâu đài" quặng mỏ. Nhiệm vụ của chúng ta là tìm ra chìa khóa để mở những lâu đài đó. Và hợp kim? Đó lại là câu chuyện về sự đoàn kết. Giống như trong truyện ngụ ngôn "Bó đũa", khi các kim loại đứng riêng lẻ, chúng có thể yếu ớt, nhưng khi kết hợp lại, chúng tạo nên một sức mạnh phi thường.
+                    </p>
+                    <p class="text-lg font-semibold text-teal-700">
+                        Nào, hãy cùng thầy bắt đầu hành trình khám phá những bí mật của thế giới kim loại nhé!
+                    </p>
+                </div>
+            </div>
+
+            <div id="content1" class="tab-content hidden">
+                <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-teal-500">
+                    <div id="theory-section-1">
+                        <h2 class="text-3xl font-bold text-teal-600 mb-6">PHƯƠNG PHÁP VÀ QUÁ TRÌNH TÁCH KIM LOẠI</h2>
+                        <p class="mb-6 bg-sky-50 border-l-4 border-sky-400 p-4 rounded-r-lg text-slate-700">Nguyên tắc chung để điều chế kim loại là khử ion kim loại thành nguyên tử kim loại: \(\ M^{n+} + ne \rightarrow M \).</p>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h3 class="text-xl font-bold text-sky-700">1. Phương pháp thủy luyện (dùng cho kim loại yếu)</h3>
+                                <p class="mt-2 text-slate-600">Dùng kim loại có tính khử mạnh hơn để khử ion của kim loại yếu hơn trong dung dịch muối.</p>
+                                <p class="mt-2 p-3 bg-slate-50 rounded-lg text-center font-mono">\( Fe + CuSO_4 \rightarrow FeSO_4 + Cu \downarrow \)</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-sky-700">2. Phương pháp nhiệt luyện (dùng cho kim loại trung bình, yếu)</h3>
+                                <p class="mt-2 text-slate-600">Dùng các chất khử mạnh như C, CO, H<sub>2</sub>, Al để khử oxit kim loại ở nhiệt độ cao.</p>
+                                <p class="mt-2 p-3 bg-slate-50 rounded-lg text-center font-mono">\( Fe_2O_3 + 3CO \xrightarrow{t^\circ} 2Fe + 3CO_2 \uparrow \)</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-sky-700">3. Phương pháp điện phân (dùng cho kim loại mạnh)</h3>
+                                <p class="mt-2 text-slate-600">Dùng dòng điện một chiều để khử ion kim loại. Thường là điện phân nóng chảy các hợp chất của chúng.</p>
+                                <p class="mt-2 p-3 bg-slate-50 rounded-lg text-center font-mono">\( 2NaCl \xrightarrow{\text{đpnc}} 2Na + Cl_2 \uparrow \)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-10 border-t-2 border-dashed pt-8">
+                            <h3 class="text-2xl font-bold text-center text-teal-700 mb-4">Ví dụ điển hình: Sản xuất Nhôm</h3>
+                            <p class="mt-2 text-center text-slate-600">Nhôm là kim loại rất hoạt động, vì vậy nó được sản xuất bằng cách điện phân nóng chảy nhôm oxit ($Al_2O_3$) có lẫn criolit (làm giảm nhiệt độ nóng chảy và tăng độ dẫn điện).</p>
+                            <p class="mt-2 text-center p-3 bg-slate-50 rounded-lg font-mono">\( 2Al_2O_3 \xrightarrow[\text{criolit}]{\text{đpnc}} 4Al + 3O_2 \uparrow \)</p>
+                            <p class="mt-6 font-semibold text-center text-slate-700">Xem video mô phỏng quy trình sản xuất nhôm từ quặng bauxite:</p>
+                            <div class="relative mt-4 rounded-lg overflow-hidden shadow-lg mx-auto max-w-2xl" style="padding-bottom: 56.25%;">
+                                <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/mMfnDwRbPw0" title="Quy trình sản xuất nhôm" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 border-t-2 border-dashed pt-8">
+                            <h3 class="text-2xl font-bold text-center text-teal-700 mb-4">Ví dụ khác: Sản xuất Đồng</h3>
+                            <p class="mt-2 text-center text-slate-600">Đồng là kim loại hoạt động trung bình, có thể được điều chế bằng nhiều phương pháp như nhiệt luyện hoặc thủy luyện. Video dưới đây minh họa một quy trình sản xuất đồng hiện đại.</p>
+                            <p class="mt-6 font-semibold text-center text-slate-700">Xem video quy trình sản xuất đồng:</p>
+                            <div class="relative mt-4 rounded-lg overflow-hidden shadow-lg mx-auto max-w-2xl" style="padding-bottom: 56.25%;">
+                                <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/SbECvSHR4rQ" title="Quy trình sản xuất đồng" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 border-t-2 border-dashed pt-8">
+                            <h3 class="text-2xl font-bold text-center text-teal-700 mb-4">Mô phỏng: Điện phân nóng chảy NaCl</h3>
+                            <div class="bg-slate-200/50 p-4 rounded-lg flex justify-center items-center h-64">
+                                <svg id="electrolysis-svg" width="300" height="200" viewBox="0 0 300 200">
+                                    <rect x="50" y="50" width="200" height="120" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="2"/>
+                                    <text x="150" y="40" text-anchor="middle" font-size="14">Dung dịch NaCl nóng chảy</text>
+                                    <rect x="80" y="70" width="20" height="80" fill="#71717a"/>
+                                    <text x="90" y="65" text-anchor="middle" font-weight="bold">- Catot</text>
+                                    <rect x="200" y="70" width="20" height="80" fill="#71717a"/>
+                                    <text x="210" y="65" text-anchor="middle" font-weight="bold">Anot +</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-10 border-t-2 border-dashed pt-8">
+                        <h3 class="text-2xl font-bold text-teal-700 mb-4">Góc tương tác với AI</h3>
+                        <p class="mb-3 text-slate-600">Có câu hỏi nào về việc tách kim loại không? Hãy hỏi Thầy Lâm AI nhé!</p>
+                        <textarea id="ai-question-1" class="w-full p-3 border-2 border-slate-300 rounded-md focus:border-teal-500 focus:ring-teal-500" rows="3" placeholder="Ví dụ: Tại sao phải điện phân nóng chảy Al2O3 mà không phải dung dịch?"></textarea>
+                        <button class="secondary-button mt-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-2 px-6 rounded-lg font-semibold" onclick="askAI('ai-question-1', 'ai-answer-1')">Gửi câu hỏi</button>
+                        <div id="ai-answer-1" class="mt-4 p-4 bg-amber-50 rounded-lg border-l-4 border-amber-400 hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content2" class="tab-content hidden">
+                 <div class="bg-white p-8 rounded-xl shadow-xl border-t-4 border-amber-500">
+                    <div id="theory-section-2">
+                        <h2 class="text-3xl font-bold text-amber-600 mb-6">HỢP KIM LÀ GÌ?</h2>
+                        <p class="mb-6 bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg text-slate-700">Hợp kim là vật liệu kim loại chứa một kim loại cơ bản và một số kim loại hoặc phi kim khác.</p>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h3 class="text-xl font-bold text-amber-700">1. Tính chất của hợp kim</h3>
+                                <p class="mt-2 text-slate-600">Hợp kim thường có những tính chất hóa học tương tự kim loại trong đó, nhưng tính chất vật lí và cơ học lại rất khác. Thường thì hợp kim cứng và giòn hơn kim loại thành phần, có nhiệt độ nóng chảy thấp hơn và dẫn điện/nhiệt kém hơn.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-amber-700">2. Một số hợp kim quan trọng</h3>
+                                <ul class="list-disc list-inside ml-4 space-y-3 text-slate-600">
+                                    <li><strong>Gang - Thép:</strong> Hợp kim của Sắt (Fe) với Cacbon (C). Thép cứng hơn sắt, là vật liệu không thể thiếu trong xây dựng, chế tạo máy.</li>
+                                    <li><strong>Duralumin:</strong> Hợp kim của Nhôm (Al) với Đồng (Cu), Mangan (Mn), Magie (Mg). Nhẹ và bền, dùng trong công nghiệp hàng không.</li>
+                                    <li><strong>Vàng tây:</strong> Hợp kim của Vàng (Au) với Đồng (Cu), Bạc (Ag)... Cứng hơn vàng nguyên chất, dễ gia công, dùng làm đồ trang sức.</li>
+                                    <li><strong>Đồng thau (Brass):</strong> Hợp kim của Đồng (Cu) và Kẽm (Zn). Có màu vàng óng, chống ăn mòn tốt, dùng làm đồ trang trí, nhạc cụ.</li>
+                                    <li><strong>Thép không gỉ (Inox):</strong> Hợp kim của Sắt (Fe) với Crom (Cr) và Niken (Ni). Chống ăn mòn và gỉ sét vượt trội, dùng làm dụng cụ nhà bếp, y tế.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 border-t-2 border-dashed pt-8">
+                            <h3 class="text-2xl font-bold text-center text-teal-700 mb-4">Video Minh Họa: Hợp Kim</h3>
+                            <p class="mt-6 font-semibold text-center text-slate-700">Xem video để hiểu rõ hơn về hợp kim và các ứng dụng của chúng:</p>
+                            <div class="relative mt-4 rounded-lg overflow-hidden shadow-lg mx-auto max-w-2xl" style="padding-bottom: 56.25%;">
+                                <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/SttIJKywzBU" title="Hợp kim là gì?" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 border-t-2 border-dashed pt-8 bg-teal-50/50 p-6 rounded-lg">
+                            <h3 class="text-2xl font-bold text-center text-teal-800 mb-4">💡 Có thể em chưa biết?</h3>
+                            <div class="space-y-4 text-slate-700">
+                                <p><strong class="text-teal-700">Hợp kim nhớ hình:</strong> Có một loại hợp kim tên là Nitinol (Niken-Titan), nó có khả năng "ghi nhớ" hình dạng ban đầu. Dù bạn có bẻ cong hay làm biến dạng nó, chỉ cần hơ nóng một chút, nó sẽ tự động quay trở lại hình dạng gốc. Công nghệ này được ứng dụng trong y học để làm gọng kính tự điều chỉnh hay các stent nong mạch máu.</p>
+                                <p><strong class="text-teal-700">Siêu hợp kim:</strong> Động cơ phản lực của máy bay phải hoạt động ở nhiệt độ và áp suất cực lớn. Các kim loại thông thường sẽ bị nóng chảy. Người ta đã tạo ra các "siêu hợp kim" (superalloys) trên cơ sở Niken, Coban, Sắt... có thể chịu được những điều kiện khắc nghiệt đó, giúp máy bay bay cao và bay xa hơn.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-10 border-t-2 border-dashed pt-8">
+                        <h3 class="text-2xl font-bold text-teal-700 mb-4">Góc tương tác với AI</h3>
+                        <p class="mb-3 text-slate-600">Bạn có thắc mắc gì về hợp kim không? Đừng ngần ngại hỏi nhé!</p>
+                        <textarea id="ai-question-2" class="w-full p-3 border-2 border-slate-300 rounded-md focus:border-teal-500 focus:ring-teal-500" rows="3" placeholder="Ví dụ: Tại sao thêm Crom vào thép lại chống gỉ?"></textarea>
+                        <button class="secondary-button mt-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-2 px-6 rounded-lg font-semibold" onclick="askAI('ai-question-2', 'ai-answer-2')">Gửi câu hỏi</button>
+                        <div id="ai-answer-2" class="mt-4 p-4 bg-amber-50 rounded-lg border-l-4 border-amber-400 hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quiz" class="tab-content hidden">
+                <div id="quiz-entry" class="text-center bg-white p-8 rounded-xl shadow-xl border-t-4 border-cyan-500">
+                    <h2 class="text-3xl font-bold text-cyan-600 mb-4">Bài Kiểm Tra Cuối Bài</h2>
+                    <p class="mb-6 text-slate-600">Hãy nhập tên của em để bắt đầu làm bài nhé!</p>
+                    <input type="text" id="student-name" placeholder="Nhập họ và tên của bạn" class="text-center w-full max-w-sm p-3 border-2 border-slate-300 rounded-lg focus:border-cyan-500 focus:ring-cyan-500">
+                    <div id="student-history-msg" class="text-center my-4 text-sky-600 font-medium"></div>
+                    <button id="start-quiz-btn" class="pill-button mt-4 bg-gradient-to-r from-cyan-500 to-sky-600 text-white font-bold py-3 px-10 rounded-full text-lg shadow-lg">Bắt đầu!</button>
+                </div>
+
+                <div id="quiz-container" class="hidden bg-white p-4 md:p-8 rounded-xl shadow-xl border-t-4 border-cyan-500">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-cyan-700">Câu hỏi <span id="question-number"></span>/<span id="total-questions"></span></h3>
+                        <div class="flex items-center gap-4">
+                            <button id="flag-btn" onclick="toggleFlag()" class="flag-button p-2 rounded-full hover:bg-slate-200" aria-label="Đánh dấu câu hỏi">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="question-text" class="text-lg font-semibold mb-6 min-h-[5rem] text-slate-800"></div>
+                    <div id="options-container" class="space-y-3"></div>
+                    <div id="review-info" class="hidden mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400">
+                        <p id="review-info-text" class="text-yellow-800"></p>
+                    </div>
+                    <div class="mt-8 flex justify-between items-center">
+                        <button id="prev-btn" class="secondary-button bg-slate-200 py-2 px-6 rounded-lg font-semibold text-slate-700">Câu trước</button>
+                        <div id="quiz-nav-center" class="flex gap-2">
+                             <button id="next-btn" class="secondary-button bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-2 px-6 rounded-lg font-semibold">Câu tiếp</button>
+                             <button id="submit-btn" class="hidden secondary-button bg-gradient-to-r from-amber-500 to-yellow-500 text-white py-2 px-6 rounded-lg font-bold">Nộp bài</button>
+                             <button id="back-to-results-btn" class="hidden secondary-button bg-sky-600 text-white py-2 px-6 rounded-lg font-bold">Quay lại kết quả</button>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="font-bold text-center mb-3 text-slate-600">Tiến độ</h4>
+                        <div id="progress-bar" class="flex flex-wrap gap-2 justify-center"></div>
+                    </div>
+                </div>
+
+                <div id="results-container" class="hidden text-center bg-white p-8 rounded-xl shadow-xl border-t-4 border-teal-500 relative overflow-hidden">
+                    <div id="confetti-container" class="absolute inset-0 pointer-events-none"></div>
+                    <h2 class="text-3xl font-bold text-teal-600 mb-2">Hoàn thành!</h2>
+                    <p class="text-lg mb-4 text-slate-600">Cùng xem kết quả của <span id="result-student-name" class="font-bold"></span> nhé!</p>
+                    <div class="flex justify-around items-center my-6">
+                        <div>
+                            <p class="text-5xl font-extrabold text-teal-500" id="correct-count"></p>
+                            <p class="text-slate-600 mt-1">Số câu đúng</p>
+                        </div>
+                        <div>
+                            <p class="text-5xl font-extrabold text-sky-600" id="percentage"></p>
+                            <p class="text-slate-600 mt-1">Tỷ lệ chính xác</p>
+                        </div>
+                    </div>
+                    <div class="text-left bg-amber-50 p-6 rounded-lg border-l-4 border-amber-400 my-6">
+                        <h3 class="font-bold text-amber-800 text-lg mb-2">Nhận xét từ Thầy Lâm AI:</h3>
+                        <p id="ai-analysis" class="text-amber-900/80 whitespace-pre-wrap"></p>
+                    </div>
+                    <p id="feedback-comment" class="text-lg font-medium text-teal-700 mb-6"></p>
+                    <div class="flex flex-wrap gap-4 justify-center">
+                        <button id="review-quiz-btn" class="secondary-button bg-sky-600 text-white py-2 px-6 rounded-lg font-semibold">Xem lại bài làm</button>
+                        <button id="download-summary-btn" class="secondary-button bg-teal-600 text-white py-2 px-6 rounded-lg font-semibold">Tải xuống Tóm tắt</button>
+                        <button onclick="location.reload()" class="secondary-button bg-slate-500 text-white py-2 px-6 rounded-lg font-semibold">Làm lại</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md text-center">
+            <div id="modal-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // --- CONFIGURATION ---
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwlXTNBeYvXRFTETFJI65gFUywVY69dLpoL5O0H9aD0nRe3Jf5d8jWQqCQO_fZHpztU/exec';
+
+        // --- GLOBAL STATE ---
+        let currentTab = 'intro';
+        let quizData = [];
+        let studentAnswers = [];
+        let questionTimers = [];
+        let currentQuestionIndex = 0;
+        let studentName = '';
+        const quizTopic = 'TÁCH KIM LOẠI VÀ SỬ DỤNG HỢP KIM';
+        
+        let activeTimer = null;
+        let isReviewMode = false;
+        let quizResultsData = null;
+
+        // --- DOM ELEMENTS ---
+        const splashScreen = document.getElementById('splash-screen');
+        const mainContent = document.getElementById('main-content');
+        const startLearningBtn = document.getElementById('start-learning-btn');
+        const studentNameInput = document.getElementById('student-name');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const studentHistoryMsg = document.getElementById('student-history-msg');
+
+        // --- EVENT LISTENERS ---
+        startLearningBtn.addEventListener('click', () => {
+            splashScreen.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            runElectrolysisAnimation();
+        });
+        
+        studentNameInput.addEventListener('input', () => {
+             if (studentNameInput.value.trim() !== '') {
+                 studentHistoryMsg.textContent = 'Đang kiểm tra lịch sử làm bài...';
+                 getStudentData(studentNameInput.value.trim());
+             } else {
+                 studentHistoryMsg.textContent = '';
+             }
+        });
+
+        startQuizBtn.addEventListener('click', () => {
+            studentName = studentNameInput.value.trim();
+            if (studentName === '') {
+                showModalMessage('Vui lòng nhập tên của bạn!', 'error');
+                return;
+            }
+            const numQuestions = parseInt(startQuizBtn.dataset.questions || '15');
+            initiateQuiz(numQuestions);
+        });
+
+        // --- TAB & NAVIGATION ---
+        function showTab(tabId) {
+            if (currentTab === tabId) return;
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+            
+            currentTab = tabId;
+            if (tabId === 'content1') runElectrolysisAnimation();
+        }
+
+        // --- API & DATA HANDLING ---
+        async function fetchFromGAS(action, payload) {
+            showModalMessage('<div class="loader mx-auto"></div><p class="mt-2">Đang xử lý...</p>', 'loading', false);
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action, ...payload })
+                });
+                if (!response.ok) throw new Error(`Lỗi máy chủ: ${response.statusText}`);
+                const result = await response.json();
+                if (result.status === 'error') throw new Error(result.message || 'Có lỗi xảy ra từ phía máy chủ.');
+                closeModal();
+                return result;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showModalMessage(`Lỗi: ${error.message}. Vui lòng kiểm tra lại URL của Google Apps Script và thử lại.`, 'error');
+                return null;
+            }
+        }
+        
+        // **NEW** A silent version of fetch for background tasks
+        async function fetchFromGASSilent(action, payload) {
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action, ...payload })
+                });
+                if (!response.ok) throw new Error(`Lỗi máy chủ: ${response.statusText}`);
+                const result = await response.json();
+                if (result.status === 'error') throw new Error(result.message || 'Có lỗi xảy ra từ phía máy chủ.');
+                return result;
+            } catch (error) {
+                console.error('Silent Fetch error:', error);
+                return null;
+            }
+        }
+
+        async function getStudentData(name) {
+            const data = await fetchFromGAS('getStudentData', { name });
+            if (data) {
+                let numQuestions;
+                let message;
+                if (data.lastScore === null) {
+                    numQuestions = 15;
+                    message = `Chào ${name}! Chúc bạn làm bài tốt với <strong>${numQuestions}</strong> câu hỏi đầu tiên.`;
+                } else if (data.lastScore < 50) {
+                    numQuestions = 15;
+                    message = `Chào ${name}! Lần trước bạn làm chưa tốt lắm. Bài này sẽ có <strong>${numQuestions}</strong> câu để bạn củng cố kiến thức nhé.`;
+                } else if (data.lastScore < 80) {
+                    numQuestions = 12;
+                    message = `Chào ${name}! Chào mừng bạn trở lại. Bài làm này sẽ có <strong>${numQuestions}</strong> câu hỏi.`;
+                } else {
+                    numQuestions = 10;
+                    message = `Chào ${name}! Bạn làm rất tốt lần trước. Bài này sẽ có <strong>${numQuestions}</strong> câu hỏi để duy trì phong độ.`;
+                }
+                studentHistoryMsg.innerHTML = message;
+                startQuizBtn.dataset.questions = numQuestions;
+            }
+        }
+
+        async function initiateQuiz(numQuestions) {
+            const data = await fetchFromGAS('getQuestions', { count: numQuestions });
+            if (data && data.questions) {
+                quizData = data.questions;
+                studentAnswers = new Array(quizData.length).fill(null);
+                questionTimers = new Array(quizData.length).fill(0);
+                document.getElementById('quiz-entry').classList.add('hidden');
+                document.getElementById('quiz-container').classList.remove('hidden');
+                currentQuestionIndex = 0;
+                isReviewMode = false;
+                renderQuestion();
+                renderProgressBar();
+            }
+        }
+        
+        async function askAI(questionId, answerId) {
+            const questionInput = document.getElementById(questionId);
+            const answerDiv = document.getElementById(answerId);
+            const question = questionInput.value.trim();
+            if (!question) return;
+            answerDiv.innerHTML = '<div class="loader mx-auto"></div>';
+            answerDiv.classList.remove('hidden');
+            const result = await fetchFromGAS('askAI', { question });
+            if (result && result.answer) {
+                answerDiv.innerHTML = result.answer.replace(/\n/g, '<br>');
+            } else {
+                answerDiv.innerHTML = 'Rất tiếc, đã có lỗi xảy ra. Vui lòng thử lại sau.';
+            }
+        }
+
+        // --- QUIZ LOGIC ---
+        function renderQuestion() {
+            if (activeTimer) clearInterval(activeTimer);
+            if (!isReviewMode) {
+                const timeAlreadySpent = questionTimers[currentQuestionIndex] || 0;
+                const questionStartTime = Date.now();
+                activeTimer = setInterval(() => {
+                    const timeSinceStart = Math.floor((Date.now() - questionStartTime) / 1000);
+                    questionTimers[currentQuestionIndex] = timeAlreadySpent + timeSinceStart;
+                }, 1000);
+            }
+            const q = quizData[currentQuestionIndex];
+            document.getElementById('question-number').textContent = currentQuestionIndex + 1;
+            document.getElementById('total-questions').textContent = quizData.length;
+            document.getElementById('question-text').innerHTML = q.question;
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            document.getElementById('review-info').classList.add('hidden');
+            const studentAns = studentAnswers[currentQuestionIndex]?.answer ?? null;
+            let correctAns;
+            if (isReviewMode) {
+                const correctAnsObj = quizResultsData.correctAnswers.find(ans => ans.id === q.id);
+                correctAns = correctAnsObj ? correctAnsObj.answer : null;
+            }
+            switch (q.type) {
+                case 'mc':
+                case 'tf':
+                    const options = q.type === 'tf' ? ['Đúng', 'Sai'] : q.options;
+                    options.forEach((option, index) => {
+                        const answerValue = q.type === 'tf' ? (index === 0) : index;
+                        const optionEl = document.createElement('button');
+                        optionEl.className = 'quiz-option w-full text-left p-4 border-2 rounded-lg';
+                        optionEl.innerHTML = option;
+                        optionEl.disabled = isReviewMode;
+                        optionEl.onclick = () => selectAnswer(answerValue);
+                        if (isReviewMode) {
+                            if (answerValue === studentAns) {
+                                optionEl.classList.add(answerValue === correctAns ? 'correct' : 'incorrect');
+                            } else if (answerValue === correctAns) {
+                                optionEl.classList.add('correct-answer-highlight');
+                            }
+                        } else if (studentAns === answerValue) {
+                            optionEl.classList.add('selected');
+                        }
+                        optionsContainer.appendChild(optionEl);
+                    });
+                    break;
+                case 'fib':
+                    const inputEl = document.createElement('input');
+                    inputEl.type = 'text';
+                    inputEl.className = 'w-full p-3 border-2 border-slate-300 rounded-lg focus:border-cyan-500 focus:ring-cyan-500';
+                    inputEl.placeholder = 'Nhập câu trả lời của bạn...';
+                    inputEl.disabled = isReviewMode;
+                    inputEl.oninput = () => selectAnswer(inputEl.value);
+                    if (studentAns) inputEl.value = studentAns;
+                    optionsContainer.appendChild(inputEl);
+                    if (isReviewMode) {
+                        const isCorrect = correctAns.includes((studentAns || '').toString().trim().toLowerCase());
+                        inputEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+                        const reviewInfo = document.getElementById('review-info');
+                        const reviewText = document.getElementById('review-info-text');
+                        reviewText.innerHTML = `<strong>Đáp án đúng:</strong> ${correctAns.join(' hoặc ')}`;
+                        reviewInfo.classList.remove('hidden');
+                    }
+                    break;
+            }
+            updateNavButtons();
+            updateFlagButton();
+        }
+
+        function selectAnswer(answer) {
+            studentAnswers[currentQuestionIndex] = {
+                id: quizData[currentQuestionIndex].id,
+                answer: answer,
+                flagged: studentAnswers[currentQuestionIndex]?.flagged || false
+            };
+            if (quizData[currentQuestionIndex].type !== 'fib') renderQuestion();
+            updateProgressBar();
+        }
+
+        function updateNavButtons() {
+            const isFirstQ = currentQuestionIndex === 0;
+            const isLastQ = currentQuestionIndex === quizData.length - 1;
+            document.getElementById('prev-btn').style.visibility = isFirstQ ? 'hidden' : 'visible';
+            document.getElementById('next-btn').style.display = !isLastQ ? 'block' : 'none';
+            document.getElementById('submit-btn').style.display = (isLastQ && !isReviewMode) ? 'block' : 'none';
+            document.getElementById('back-to-results-btn').style.display = isReviewMode ? 'block' : 'none';
+        }
+        
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentQuestionIndex < quizData.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            }
+        });
+        
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            const unanswered = studentAnswers.filter(a => a === null || a.answer === null || a.answer === '').length;
+            let message = "Bạn có chắc chắn muốn nộp bài không?";
+            if (unanswered > 0) message += ` Vẫn còn ${unanswered} câu chưa được trả lời.`;
+            showModalMessage(`
+                <h3 class="text-xl font-bold mb-4">Xác nhận nộp bài</h3>
+                <p class="mb-6">${message}</p>
+                <div class="flex justify-center gap-4">
+                    <button onclick="closeModal()" class="secondary-button bg-slate-300 py-2 px-6 rounded-lg">Hủy</button>
+                    <button onclick="finalizeAndSubmit()" class="secondary-button bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-2 px-6 rounded-lg">Nộp bài</button>
+                </div>
+            `, 'confirm', false);
+        });
+
+        function finalizeAndSubmit() {
+            if (activeTimer) clearInterval(activeTimer);
+            studentAnswers.forEach((ans, i) => {
+                if (ans) ans.timeTaken = questionTimers[i];
+                else studentAnswers[i] = { id: quizData[i].id, answer: null, timeTaken: questionTimers[i], flagged: false };
+            });
+            submitQuizData();
+        }
+        
+        async function submitQuizData() {
+            const payload = { name: studentName, answers: studentAnswers };
+            const result = await fetchFromGAS('submitQuiz', payload);
+            if (result) displayResults(result);
+        }
+
+        function displayResults(result) {
+            quizResultsData = result; 
+            document.getElementById('quiz-container').classList.add('hidden');
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.classList.remove('hidden');
+            document.getElementById('result-student-name').textContent = studentName;
+            document.getElementById('correct-count').textContent = `${result.correctCount}/${result.total}`;
+            document.getElementById('percentage').textContent = `${result.percentage}%`;
+            document.getElementById('ai-analysis').textContent = result.analysis;
+            document.getElementById('feedback-comment').textContent = result.feedbackComment;
+            
+            // **NEW** Automatically upload summary to Drive
+            autoUploadSummary(result);
+
+            document.getElementById('review-quiz-btn').onclick = startReviewMode;
+            document.getElementById('download-summary-btn').onclick = () => downloadSummaryToLocal(result);
+            
+            if (result.percentage >= 80) launchConfetti();
+        }
+        
+        function startReviewMode() {
+            isReviewMode = true;
+            document.getElementById('results-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('flag-btn').style.display = 'none';
+            currentQuestionIndex = 0;
+            renderQuestion();
+            renderProgressBar(true);
+        }
+
+        document.getElementById('back-to-results-btn').onclick = () => {
+            isReviewMode = false;
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('results-container').classList.remove('hidden');
+            document.getElementById('flag-btn').style.display = 'block';
+        };
+
+        function renderProgressBar(isReview = false) {
+            const bar = document.getElementById('progress-bar');
+            bar.innerHTML = '';
+            quizData.forEach((q, index) => {
+                const item = document.createElement('button');
+                item.className = 'w-8 h-8 rounded-full border-2 flex items-center justify-center font-semibold transition-all';
+                item.textContent = index + 1;
+                item.onclick = () => {
+                    currentQuestionIndex = index;
+                    renderQuestion();
+                };
+                const studentAns = studentAnswers[index];
+                if (isReview) {
+                    const correctAnsObj = quizResultsData.correctAnswers.find(ans => ans.id === q.id);
+                    let isCorrect = false;
+                    if (studentAns && correctAnsObj) {
+                        const ansValue = studentAns.answer;
+                        const correctValue = correctAnsObj.answer;
+                        isCorrect = q.type === 'fib' ? correctValue.includes((ansValue || '').toString().trim().toLowerCase()) : ansValue === correctValue;
+                    }
+                    item.classList.add(isCorrect ? 'bg-teal-100' : 'bg-rose-100', isCorrect ? 'border-teal-300' : 'border-rose-300');
+                } else {
+                    if (studentAns !== null) item.classList.add('bg-cyan-100', 'border-cyan-300');
+                    else item.classList.add('bg-slate-100', 'border-slate-300');
+                    if (studentAns?.flagged) item.classList.add('ring-2', 'ring-amber-400');
+                }
+                bar.appendChild(item);
+            });
+        }
+
+        function toggleFlag() {
+            if (!studentAnswers[currentQuestionIndex]) {
+                 studentAnswers[currentQuestionIndex] = { id: quizData[currentQuestionIndex].id, answer: null, timeTaken: 0, flagged: false };
+            }
+            studentAnswers[currentQuestionIndex].flagged = !studentAnswers[currentQuestionIndex].flagged;
+            updateFlagButton();
+            renderProgressBar();
+        }
+
+        function updateFlagButton() {
+            const flagBtn = document.getElementById('flag-btn');
+            if (studentAnswers[currentQuestionIndex]?.flagged) flagBtn.classList.add('flagged');
+            else flagBtn.classList.remove('flagged');
+        }
+        
+        function updateProgressBar() {
+            if (isReviewMode) return;
+            const item = document.getElementById('progress-bar').children[currentQuestionIndex];
+            if (studentAnswers[currentQuestionIndex] !== null) {
+                 item.classList.remove('bg-slate-100', 'border-slate-300');
+                 item.classList.add('bg-cyan-100', 'border-cyan-300');
+            }
+        }
+        
+        // --- SUMMARY & DOWNLOAD ---
+        
+        // **NEW** Function to automatically upload the summary to Google Drive
+        async function autoUploadSummary(result) {
+            const summaryHtml = generateSummaryHtml(result);
+            console.log("Attempting to auto-upload summary to Drive...");
+            const response = await fetchFromGASSilent('saveSummaryToDrive', {
+                name: studentName,
+                topic: quizTopic,
+                content: summaryHtml
+            });
+            if (response && response.status === 'success') {
+                console.log("Auto-upload to Drive successful.");
+            } else {
+                console.error("Auto-upload to Drive failed silently.");
+            }
+        }
+
+        // **UPDATED** This function now only handles local download
+        function downloadSummaryToLocal(result) {
+            const summaryHtml = generateSummaryHtml(result);
+            const blob = new Blob([summaryHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-');
+            a.href = url;
+            a.download = `${studentName} - Tom tat bai lam - ${today}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function generateSummaryHtml(result) {
+            const theory1Html = document.getElementById('theory-section-1').innerHTML;
+            const theory2Html = document.getElementById('theory-section-2').innerHTML;
+            const fullTheoryHtml = `<div class="theory-section">${theory1Html}</div><div class="theory-section">${theory2Html}</div>`;
+            let questionsHtml = quizData.map((q, i) => {
+                const studentAns = studentAnswers[i];
+                const correctAnsObj = result.correctAnswers.find(ans => ans.id === q.id);
+                let isCorrect = false;
+                if (studentAns && correctAnsObj) {
+                    const studentAnswerText = studentAns.answer === null ? '' : studentAns.answer.toString().trim().toLowerCase();
+                    isCorrect = q.type === 'fib' ? correctAnsObj.answer.includes(studentAnswerText) : studentAns.answer === correctAnsObj.answer;
+                }
+                let answerHtml = `<li><strong>Câu trả lời của bạn:</strong> ${studentAns.answer === null ? '<em>Chưa trả lời</em>' : studentAns.answer}</li>`;
+                if (!isCorrect) {
+                    const correctAnswerText = Array.isArray(correctAnsObj.answer) ? correctAnsObj.answer.join(' hoặc ') : correctAnsObj.answer;
+                    answerHtml += `<li class="correct-ans"><strong>Đáp án đúng:</strong> ${correctAnswerText}</li>`;
+                }
+                return `<div class="question-summary ${isCorrect ? 'correct' : 'incorrect'}"><h4>Câu ${i + 1}: ${q.question}</h4><ul>${answerHtml}</ul></div>`;
+            }).join('');
+
+            return `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Tóm tắt bài làm của ${studentName}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;line-height:1.6;color:#333}.container{max-width:800px;margin:auto;padding:20px;border:1px solid #ddd;border-radius:8px;background:#fff}.header{text-align:center;border-bottom:2px solid #eee;padding-bottom:10px;margin-bottom:20px}h1,h2,h3,h4{color:#2c3e50}.result-overview{background:#eaf5ff;padding:15px;border-radius:8px;text-align:center;margin-bottom:20px}.ai-analysis{background:#fffbe6;padding:15px;border-radius:8px;margin-top:20px;border:1px solid #ffecb3}.theory-section{margin-bottom:20px}.theory-section h2,.theory-section h3{border-bottom:1px solid #eee;padding-bottom:5px}.question-summary{margin-top:20px;padding:15px;border-radius:8px;border-left:5px solid}.question-summary.correct{border-left-color:#28a745;background:#e9f7ef}.question-summary.incorrect{border-left-color:#dc3545;background:#fbebed}.question-summary h4{margin-top:0}ul{padding-left:20px;list-style-type:none}li.correct-ans{color:#28a745;font-weight:bold}</style></head><body><div class="container"><div class="header"><h1>Tóm Tắt Toàn Diện</h1><h2>Môn: Hóa Học 9 - Chủ đề: ${quizTopic}</h2><p><strong>Học sinh:</strong> ${studentName}</p></div><hr><h2>I. Kết Quả Bài Làm</h2><div class="result-overview"><h3>Kết quả: ${result.correctCount}/${result.total} (${result.percentage}%)</h3></div><div class="ai-analysis"><h3>Nhận xét từ Thầy Lâm AI</h3><p>${result.analysis.replace(/\n/g, '<br>')}</p></div><h3>Chi tiết bài làm</h3>${questionsHtml}<hr><h2>II. Tóm Tắt Lý Thuyết</h2>${fullTheoryHtml}</div></body></html>`;
+        }
+
+        function showModalMessage(content, type = 'message', autoClose = true) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modal-content');
+            modalContent.innerHTML = content;
+            modalContent.parentElement.className = 'bg-white rounded-lg shadow-xl p-6 w-full max-w-md text-center';
+            if (type === 'error') modalContent.parentElement.classList.add('bg-red-100', 'border-2', 'border-red-400');
+            else if (type === 'success') modalContent.parentElement.classList.add('bg-green-100', 'border-2', 'border-green-400');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (autoClose && type !== 'loading' && type !== 'confirm') setTimeout(closeModal, 2500);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function runElectrolysisAnimation() {
+            const svg = document.getElementById('electrolysis-svg');
+            if (!svg || svg.dataset.animated) return;
+            svg.dataset.animated = 'true';
+            const ions = [];
+            for (let i = 0; i < 5; i++) {
+                const na = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                na.setAttribute('r', 5);
+                na.setAttribute('fill', '#3b82f6');
+                na.setAttribute('cx', 150 + (Math.random() - 0.5) * 80);
+                na.setAttribute('cy', 110 + (Math.random() - 0.5) * 60);
+                svg.appendChild(na);
+                ions.push({ el: na, targetX: 90, targetY: 70 + Math.random() * 80 });
+                const cl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                cl.setAttribute('r', 5);
+                cl.setAttribute('fill', '#16a34a');
+                cl.setAttribute('cx', 150 + (Math.random() - 0.5) * 80);
+                cl.setAttribute('cy', 110 + (Math.random() - 0.5) * 60);
+                svg.appendChild(cl);
+                ions.push({ el: cl, targetX: 210, targetY: 70 + Math.random() * 80 });
+            }
+            ions.forEach(ion => {
+                const anim = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                anim.setAttribute('attributeName', 'cx');
+                anim.setAttribute('from', ion.el.getAttribute('cx'));
+                anim.setAttribute('to', ion.targetX);
+                anim.setAttribute('dur', `${2 + Math.random() * 2}s`);
+                anim.setAttribute('repeatCount', 'indefinite');
+                ion.el.appendChild(anim);
+                const animY = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                animY.setAttribute('attributeName', 'cy');
+                animY.setAttribute('from', ion.el.getAttribute('cy'));
+                animY.setAttribute('to', ion.targetY);
+                animY.setAttribute('dur', `${2 + Math.random() * 2}s`);
+                animY.setAttribute('repeatCount', 'indefinite');
+                ion.el.appendChild(animY);
+            });
+        }
+        
+        function launchConfetti() {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#06b6d4', '#22d3ee', '#f59e0b', '#facc15', '#10b981'];
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = confetti.style.width;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = '-10%';
+                confetti.style.opacity = '1';
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                container.appendChild(confetti);
+                confetti.animate([
+                    { top: '-10%', opacity: 1 },
+                    { top: '110%', opacity: 0 }
+                ], {
+                    duration: Math.random() * 3000 + 3000,
+                    easing: 'linear',
+                    delay: Math.random() * 2000
+                }).onfinish = () => confetti.remove();
+            }
+        }
+    </script>
+</body>
+</html>
