@@ -349,6 +349,7 @@
         let activeTimer = null;
         let isReviewMode = false;
         let quizResultsData = null;
+        let debounceTimer; // Timer for debouncing name input
 
         // --- DOM ELEMENTS ---
         const splashScreen = document.getElementById('splash-screen');
@@ -365,23 +366,41 @@
             runElectrolysisAnimation();
         });
         
-        studentNameInput.addEventListener('input', () => {
-             if (studentNameInput.value.trim() !== '') {
-                 studentHistoryMsg.textContent = 'Đang kiểm tra lịch sử làm bài...';
-                 getStudentData(studentNameInput.value.trim());
-             } else {
-                 studentHistoryMsg.textContent = '';
-             }
-        });
+        // **FIXED**: Remove the input event listener to prevent automatic checks
+        // studentNameInput.addEventListener('input', ...); // This block is removed.
 
-        startQuizBtn.addEventListener('click', () => {
+        // **UPDATED**: The logic is now inside the start button's click handler
+        startQuizBtn.addEventListener('click', async () => {
             studentName = studentNameInput.value.trim();
             if (studentName === '') {
                 showModalMessage('Vui lòng nhập tên của bạn!', 'error');
                 return;
             }
-            const numQuestions = parseInt(startQuizBtn.dataset.questions || '15');
-            initiateQuiz(numQuestions);
+            
+            // Step 1: Call getStudentData and wait for it to finish. It will show its own loading modal.
+            await getStudentData(studentName); 
+
+            // Step 2: After data is fetched, get the number of questions from the button's dataset.
+            const numQuestions = parseInt(startQuizBtn.dataset.questions); 
+
+            // Step 3: Show a confirmation modal to the user.
+            const message = studentHistoryMsg.innerHTML;
+            const modalContent = `
+                <h3 class="text-xl font-bold mb-4">Sẵn sàng làm bài?</h3>
+                <div class="mb-6 text-slate-600">${message}</div>
+                <div class="flex justify-center gap-4">
+                    <button id="modal-cancel-btn" class="secondary-button bg-slate-300 py-2 px-6 rounded-lg">Để sau</button>
+                    <button id="modal-start-btn" class="secondary-button bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-2 px-6 rounded-lg">Bắt đầu ngay!</button>
+                </div>
+            `;
+            
+            showModalMessage(modalContent, 'confirm', false);
+
+            // Step 4: Add event listeners to the new modal buttons
+            document.getElementById('modal-cancel-btn').onclick = closeModal;
+            document.getElementById('modal-start-btn').onclick = () => {
+                initiateQuiz(numQuestions);
+            };
         });
 
         // --- TAB & NAVIGATION ---
@@ -420,7 +439,6 @@
             }
         }
         
-        // **NEW** A silent version of fetch for background tasks
         async function fetchFromGASSilent(action, payload) {
             try {
                 const response = await fetch(GAS_WEB_APP_URL, {
@@ -453,10 +471,10 @@
                     message = `Chào ${name}! Lần trước bạn làm chưa tốt lắm. Bài này sẽ có <strong>${numQuestions}</strong> câu để bạn củng cố kiến thức nhé.`;
                 } else if (data.lastScore < 80) {
                     numQuestions = 12;
-                    message = `Chào ${name}! Chào mừng bạn trở lại. Bài làm này sẽ có <strong>${numQuestions}</strong> câu hỏi.`;
+                    message = `Chào mừng bạn trở lại. Bài làm này sẽ có <strong>${numQuestions}</strong> câu hỏi.`;
                 } else {
                     numQuestions = 10;
-                    message = `Chào ${name}! Bạn làm rất tốt lần trước. Bài này sẽ có <strong>${numQuestions}</strong> câu hỏi để duy trì phong độ.`;
+                    message = `Bạn làm rất tốt lần trước. Bài này sẽ có <strong>${numQuestions}</strong> câu hỏi để duy trì phong độ.`;
                 }
                 studentHistoryMsg.innerHTML = message;
                 startQuizBtn.dataset.questions = numQuestions;
@@ -464,6 +482,7 @@
         }
 
         async function initiateQuiz(numQuestions) {
+            closeModal(); // **FIXED**: Close confirmation modal before starting
             const data = await fetchFromGAS('getQuestions', { count: numQuestions });
             if (data && data.questions) {
                 quizData = data.questions;
@@ -636,7 +655,6 @@
             document.getElementById('ai-analysis').textContent = result.analysis;
             document.getElementById('feedback-comment').textContent = result.feedbackComment;
             
-            // **NEW** Automatically upload summary to Drive
             autoUploadSummary(result);
 
             document.getElementById('review-quiz-btn').onclick = startReviewMode;
@@ -718,7 +736,6 @@
         
         // --- SUMMARY & DOWNLOAD ---
         
-        // **NEW** Function to automatically upload the summary to Google Drive
         async function autoUploadSummary(result) {
             const summaryHtml = generateSummaryHtml(result);
             console.log("Attempting to auto-upload summary to Drive...");
@@ -734,7 +751,6 @@
             }
         }
 
-        // **UPDATED** This function now only handles local download
         function downloadSummaryToLocal(result) {
             const summaryHtml = generateSummaryHtml(result);
             const blob = new Blob([summaryHtml], { type: 'text/html' });
